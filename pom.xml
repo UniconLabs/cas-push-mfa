@@ -137,7 +137,27 @@
 					<artifactId>cas-server-support-gauth-mongo</artifactId>
 					<version>${cas.version}</version>
 				</dependency>
- -->               <!--
+ -->
+                <dependency>
+                    <groupId>org.apereo.cas</groupId>
+                    <artifactId>cas-server-core-configuration</artifactId>
+                    <version>${cas.version}</version>
+                    <scope>compile</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.apereo.cas</groupId>
+                    <artifactId>cas-server-core-web</artifactId>
+                    <version>${cas.version}</version>
+                    <scope>compile</scope>
+                </dependency>
+                <dependency>
+                    <groupId>javax.servlet</groupId>
+                    <artifactId>javax.servlet-api</artifactId>
+                    <version>3.1.0</version>
+                    <scope>provided</scope>
+                </dependency>
+
+                <!--
                 ...Additional dependencies may be placed here...
                 -->
             </dependencies>

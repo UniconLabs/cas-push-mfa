@@ -5,6 +5,7 @@ services:
     build: .
     ports:
      - 8443:8443
+     - 5005:5005
     volumes:
      - /dev/urandom:/dev/random
 

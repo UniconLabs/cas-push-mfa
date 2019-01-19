@@ -7,4 +7,4 @@ COPY etc/cas/ /etc/cas/
 
 EXPOSE 8443
 
-CMD ["java", "-jar", "/opt/cas/cas.war"]
+CMD ["java", "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005", "-jar", "/opt/cas/cas.war"]
