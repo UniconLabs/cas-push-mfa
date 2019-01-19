@@ -2,7 +2,9 @@ package org.apereo.cas.pushmfa.config;
 
 import org.apereo.cas.configuration.CasConfigurationProperties;
 import org.apereo.cas.pushmfa.web.PushMfaEndpointController;
+import org.apereo.cas.ticket.UniqueTicketIdGenerator;
 import org.apereo.cas.ticket.registry.TicketRegistry;
+import org.apereo.cas.util.DefaultUniqueTicketIdGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -28,6 +30,6 @@ public class PushMfaConfiguration extends WebMvcConfigurerAdapter {
     @RefreshScope
     @Bean
     public PushMfaEndpointController pushMfaEndpointController() {
-        return new PushMfaEndpointController(casProperties, ticketRegistry);
+        return new PushMfaEndpointController(casProperties, ticketRegistry, new DefaultUniqueTicketIdGenerator(10, "test"));
     }
 }

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout}">
+
+<head>
+    <title th:text="#{cas.mfa.googleauth.pagetitle}"></title>
+</head>
+
+<body id="cas">
+<div layout:fragment="content">
+    <div class="box fl-panel" id="login">
+
+        <form method="post" id="fm1" class="fm-v clearfix" th:object="${credential}" th:action="@{/login}">
+            <div id="msg" class="errors" th:if="${#fields.hasErrors('*')}">
+                <span th:each="err : ${#fields.errors('*')}" th:utext="${err}"/>
+            </div>
+
+            <div class="row fl-controls-left">
+                <label for="token" class="fl-label" th:utext="#{cas.mfa.googleauth.label.token}"/>
+
+                <input type="password" class="required" id="token" size="25" tabindex="1"
+                       th:field="*{token}"
+                       th:accesskey="#{screen.welcome.label.password.accesskey}" autocomplete="off"/>
+                <div>
+                    <p/>
+                </div>
+                <input class="btn-submit" name="_eventId_submit" accesskey="l"
+                       th:value="#{screen.welcome.button.login}" tabindex="4" type="submit"/>
+            </div>
+            <div class="row btn-row">
+                <input type="hidden" name="execution" th:value="${flowExecutionKey}"/>
+                <input type="hidden" name="geolocation"/>
+            </div>
+        </form>
+        <hr>
+        <button class="btn-submit" accesskey="p"
+                tabindex="5" id="push">PUSH</button>
+        <button class="btn-submit" accesskey="c"
+                tabindex="6" id="poll_cancel">CANCEL</button>
+
+        <script>
+            var polling;
+            var nonce;
+            var token;
+
+
+            $('#push').on('click', function() {
+                polling = true;
+
+                $("#push").prop("disabled", true);
+
+                $.ajax({
+                    url: "/cas/pushmfa/initiate"
+                }).done(function(data) {
+                    nonce = data.nonce;
+                    setTimeout(poll, 1000);
+                });
+            });
+
+            function poll() {
+                $.ajax({
+                    url: "/cas/pushmfa/poll",
+                    type: "POST",
+                    dataType: 'json',
+                    data:  JSON.stringify({ nonce: nonce }),
+                    contentType: 'application/json; charset=utf-8'
+                }).done(function(data) {
+                    token = data.auth_code;
+
+                    if (token) {
+                        $("#token").val(token);
+                        $("[name='_eventId_submit']").click();
+                    } else {
+                        if (polling) {
+                            setTimeout(poll, 1000);
+                        }
+                    }
+                });
+            }
+
+            $('poll_cancel').on('click', function() {
+                polling = false;
+                $("#push").prop("disabled", false);
+            });
+
+        </script>
+
+    </div>
+</div>
+</body>
+</html>
