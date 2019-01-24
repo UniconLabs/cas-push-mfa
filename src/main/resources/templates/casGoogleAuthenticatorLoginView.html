@@ -74,13 +74,33 @@
                             setTimeout(poll, 1000);
                         }
                     }
+                }).fail(function(jqXHR, textStatus, errorThrown) {
+                    switch (jqXHR.status) {
+                        case 404:
+                            poll_cancel();
+                            alert("Request Expired.")
+                            break;
+                        case 408: case 503:
+                            if (polling) {
+                                setTimeout(poll, 1000);
+                            }
+                            break;
+                    }
+
+
                 });
             }
 
             $('poll_cancel').on('click', function() {
-                polling = false;
-                $("#push").prop("disabled", false);
+               poll_cancel();
             });
+
+            function poll_cancel() {
+                polling = false;
+                nonce = null;
+                token = null;
+                $("#push").prop("disabled", false);
+            }
 
         </script>
 

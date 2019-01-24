@@ -2,7 +2,6 @@ package org.apereo.cas.pushmfa.config;
 
 import org.apereo.cas.configuration.CasConfigurationProperties;
 import org.apereo.cas.pushmfa.web.PushMfaEndpointController;
-import org.apereo.cas.ticket.UniqueTicketIdGenerator;
 import org.apereo.cas.ticket.registry.TicketRegistry;
 import org.apereo.cas.util.DefaultUniqueTicketIdGenerator;
 import org.springframework.beans.factory.annotation.Autowired;

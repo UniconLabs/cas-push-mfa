@@ -15,6 +15,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.context.request.async.DeferredResult;
+
+import java.util.concurrent.ForkJoinPool;
 
 /**
  * This is {@link PushMfaEndpointController}.
@@ -41,9 +44,12 @@ public class PushMfaEndpointController {
     public PushMfaEndpointController(final CasConfigurationProperties casProperties,
                                      final TicketRegistry ticketRegistry,
                                      final UniqueTicketIdGenerator uniqueTicketIdGenerator) {
-          this.casProperties = casProperties;
-          this.ticketRegistry = ticketRegistry;
-          this.uniqueTicketIdGenerator = uniqueTicketIdGenerator;
+
+        LOGGER.info("PushMfaEndpointController initialized.");
+
+        this.casProperties = casProperties;
+        this.ticketRegistry = ticketRegistry;
+        this.uniqueTicketIdGenerator = uniqueTicketIdGenerator;
     }
 
 
@@ -56,18 +62,19 @@ public class PushMfaEndpointController {
         InitiatePushResponse response = new InitiatePushResponse();
 
         //Validate user session
-        //Generate and store a nonce, like in the Ticket Registry
+
         String pushMfaTicketId = uniqueTicketIdGenerator.getNewTicketId(PushMfaTicket.PREFIX);
+        LOGGER.debug("New Push MFA request for {} with Id: {}", "unknown", pushMfaTicketId);
+
         PushMfaTicket ticket = new PushMfaTicketImpl(pushMfaTicketId, new HardTimeoutExpirationPolicy(120));
         ticketRegistry.addTicket(ticket);
-        //Generate a timestamp
+
         //Perhaps sign the payload (JWT?)
         //Send signed payload to notification service
 
-        //Return the nonce to JSON so JavaScript can poll (not ideal but a good starter?
-
+        LOGGER.debug("Returning Id for polling: {}", pushMfaTicketId);
         response.setNonce(pushMfaTicketId);
-        return new ResponseEntity(response, HttpStatus.OK);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     /**
@@ -78,19 +85,21 @@ public class PushMfaEndpointController {
     @PostMapping(value = {"acknowledge"}, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<AcknowledgePushResponse> acknowledge(RequestEntity<AcknowledgePushRequest> requestEntity) {
 
-        // Look up request.getNonce() from Ticket Registry
-        // Set request.getAuthCode() in ticket
-        // store ticket for polling
-        // Return 200 to the device
-
         AcknowledgePushRequest request = requestEntity.getBody();
+        LOGGER.debug("Acknowledgement received for {} with authcode {}", request.getNonce(), request.getAuthCode());
+
         PushMfaTicket ticket = ticketRegistry.getTicket(request.getNonce(), PushMfaTicket.class);
+
+        if (ticket == null) {
+            LOGGER.warn("Ticket ({}) not found", request.getNonce());
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
         ticket.setToken(request.getAuthCode());
         ticketRegistry.updateTicket(ticket);
+        LOGGER.debug("Ticket ({}) updated with authcode", request.getNonce());
 
-        AcknowledgePushResponse response = new AcknowledgePushResponse();
-
-        return new ResponseEntity(HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     /**
@@ -99,19 +108,51 @@ public class PushMfaEndpointController {
      * @return
      */
     @PostMapping(value = {"poll"}, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<PollResponse> poll(RequestEntity<PollRequest> requestEntity) {
+    public DeferredResult<ResponseEntity<PollResponse>> poll(RequestEntity<PollRequest> requestEntity) {
 
-        // Look up request.getNonce() from Ticket Registry
-        // Return the ticket's auth_code so JS can insert and submit the page.
-        // Return 200
+        //TODO: Validate user session;
 
         PollRequest request = requestEntity.getBody();
 
-        PushMfaTicket ticket = ticketRegistry.getTicket(request.getNonce(), PushMfaTicket.class);
+        DeferredResult<ResponseEntity<PollResponse>> result = new DeferredResult<>();
+        result.onTimeout(() -> {
+            LOGGER.debug("Request timeout for {}, returning 408... Client may try request again", request.getNonce());
+            result.setErrorResult(
+                    ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT)
+                            .body(new ErrorResponse("Request timeout occurred.")));
+        });
 
 
-        PollResponse response = new PollResponse();
-        response.setAuthCode(ticket.getToken());
-        return new ResponseEntity(response, HttpStatus.OK);
+        ForkJoinPool.commonPool().submit(() -> {
+            LOGGER.debug("Polling for ticket response from: {}", request.getNonce());
+
+            try {
+                PushMfaTicket ticket = ticketRegistry.getTicket(request.getNonce(), PushMfaTicket.class);
+
+                while (ticket != null && ticket.getToken() == null) {
+                    LOGGER.trace("No authCode found for ticket (sleeping 1s): {}", request.getNonce());
+
+                    Thread.sleep(1000);
+                    ticket = ticketRegistry.getTicket(request.getNonce(), PushMfaTicket.class);
+                }
+
+                if (ticket == null) {
+                    LOGGER.debug("Ticket not found: {}, returning 404", request.getNonce());
+                    result.setErrorResult(
+                            ResponseEntity.status(HttpStatus.NOT_FOUND)
+                                    .body(new ErrorResponse("Item Not Found")));
+
+                } else {
+                    LOGGER.info("auth_code found for {}, returning: {}", request.getNonce(), ticket.getToken());
+                    final PollResponse response = new PollResponse();
+                    response.setAuthCode(ticket.getToken());
+                    result.setResult(new ResponseEntity<>(response, HttpStatus.OK));
+                }
+            } catch (InterruptedException e) {
+                LOGGER.debug("Execution interrupted for {}: {}", request.getNonce(), e.getMessage());
+            }
+        });
+
+        return result;
     }
 }
