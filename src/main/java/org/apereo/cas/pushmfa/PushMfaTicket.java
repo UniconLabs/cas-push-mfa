@@ -4,13 +4,13 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.apereo.cas.ticket.Ticket;
 
 /**
- * Interface for a Service Ticket. A service ticket is used to grant access to a
- * specific service for a principal. A Service Ticket is generally a one-time
- * use ticket.
+ * Interface for a PushMfa Ticket. A PushMfa ticket is store the OTP from a
+ * user's device. A PushMfa Ticket is generally a one-time use ticket.
  *
  * @author John Gasper
  * @since 5.2.9
  */
+
 @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include= JsonTypeInfo.As.PROPERTY)
 public interface PushMfaTicket extends Ticket {
 
@@ -21,9 +21,9 @@ public interface PushMfaTicket extends Ticket {
     String PREFIX = "PMT";
 
     /**
-     * Retrieve the service this ticket was given for.
+     * Retrieve the OTP this ticket is storing.
      *
-     * @return the server.
+     * @return the token.
      */
     String getToken();
 

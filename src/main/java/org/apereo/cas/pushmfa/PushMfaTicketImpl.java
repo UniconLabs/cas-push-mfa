@@ -10,7 +10,6 @@ import org.apereo.cas.ticket.ExpirationPolicy;
 import org.apereo.cas.ticket.TicketGrantingTicket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.Assert;
 
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorColumn;
@@ -19,13 +18,12 @@ import javax.persistence.Entity;
 import javax.persistence.Table;
 
 /**
- * Domain object representing a Service Ticket. A service ticket grants specific
- * access to a particular service. It will only work for a particular service.
- * Generally, it is a one time use Ticket, but the specific expiration policy
- * can be anything.
+ * Domain object representing a PushMfa Ticket. A PushMfa ticket stores the OTP
+ * sent from a user's device for retrieval by the user's browser,
+ * Generally, it is a one time use Ticket.
  *
- * @author Scott Battaglia
- * @since 3.0.0
+ * @author John Gasper
+ * @since 5.2.9
  */
 @Entity
 @Table(name = "PUSHMFATICKET")
@@ -39,26 +37,23 @@ public class PushMfaTicketImpl extends AbstractTicket implements PushMfaTicket {
 
 
     /**
-     * Is this service ticket the result of a new login?
+     * The OTP
      */
-    @Column(name = "TOKEN", nullable = false)
+    @Column(name = "TOKEN", nullable = true)
     private String token;
 
     /**
-     * Instantiates a new service ticket impl.
+     * Instantiates a new PushMfa ticket impl.
      */
     public PushMfaTicketImpl() {
         // exists for JPA purposes
     }
 
     /**
-     * Constructs a new ServiceTicket with a Unique Id, a TicketGrantingTicket,
-     * a Service, Expiration Policy and a flag to determine if the ticket
-     * creation was from a new Login or not.
+     * Constructs a new PushMfaTicket with a Unique Id and Expiration Policy
      *
      * @param id                 the unique identifier for the ticket.
      * @param policy             the expiration policy for the Ticket.
-     * @throws IllegalArgumentException if the TicketGrantingTicket or the Service are null.
      */
     @JsonCreator
     public PushMfaTicketImpl(@JsonProperty("id")

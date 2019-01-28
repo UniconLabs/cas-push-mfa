@@ -1,7 +1,5 @@
 package org.apereo.cas.pushmfa;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 /**
  * This is {@link AcknowledgePushRequest}.
  *
@@ -9,11 +7,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @since 5.2.9
  */
 public class AcknowledgePushRequest {
-    //@JsonProperty("nonce")
+
     private String nonce;
 
-    @JsonProperty("auth_code")
-    private String authCode;
+    private String token;
 
     public String getNonce() {
         return nonce;
@@ -23,11 +20,11 @@ public class AcknowledgePushRequest {
         this.nonce = nonce;
     }
 
-    public String getAuthCode() {
-        return authCode;
+    public String getToken() {
+        return token;
     }
 
-    public void setAuthCode(final String authCode) {
-        this.authCode = authCode;
+    public void setToken(final String token) {
+        this.token = token;
     }
 }

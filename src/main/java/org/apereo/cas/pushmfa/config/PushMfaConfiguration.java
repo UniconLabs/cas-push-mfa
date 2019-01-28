@@ -14,7 +14,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 /**
+ * This is {@link PushMfaConfiguration}.
  *
+ * @author John Gasper
+ * @since 5.2.9
  */
 @Configuration("pushMfaConfiguration")
 @EnableConfigurationProperties(CasConfigurationProperties.class)

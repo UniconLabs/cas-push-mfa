@@ -7,6 +7,7 @@ package org.apereo.cas.pushmfa;
  * @since 5.2.9
  */
 public class PollRequest {
+
     private String nonce;
 
     public String getNonce() {

@@ -64,7 +64,7 @@
                     data:  JSON.stringify({ nonce: nonce }),
                     contentType: 'application/json; charset=utf-8'
                 }).done(function(data) {
-                    token = data.auth_code;
+                    token = data.token;
 
                     if (token) {
                         $("#token").val(token);

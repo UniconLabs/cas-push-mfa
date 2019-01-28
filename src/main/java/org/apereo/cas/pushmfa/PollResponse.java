@@ -1,7 +1,5 @@
 package org.apereo.cas.pushmfa;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 /**
  * This is {@link PollResponse}.
  *
@@ -9,14 +7,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @since 5.2.9
  */
 public class PollResponse {
-    @JsonProperty("auth_code")
-    private String authCode;
 
-    public String getAuthCode() {
-        return authCode;
+    private String token;
+
+    public String getToken() {
+        return token;
     }
 
-    public void setAuthCode(final String authCode) {
-        this.authCode = authCode;
+    public void setToken(final String token) {
+        this.token = token;
     }
 }

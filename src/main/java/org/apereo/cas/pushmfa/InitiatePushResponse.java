@@ -1,7 +1,5 @@
 package org.apereo.cas.pushmfa;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 /**
  * This is {@link InitiatePushResponse}.
  *
@@ -9,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @since 5.2.9
  */
 public class InitiatePushResponse {
+
     private String nonce;
 
     public String getNonce() {

@@ -1,6 +1,5 @@
 package org.apereo.cas.pushmfa.web;
 
-import org.apache.commons.lang.StringUtils;
 import org.apereo.cas.configuration.CasConfigurationProperties;
 import org.apereo.cas.pushmfa.*;
 import org.apereo.cas.ticket.UniqueTicketIdGenerator;
@@ -22,7 +21,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.context.request.async.DeferredResult;
+import org.springframework.webflow.execution.RequestContext;
 
+import javax.servlet.http.HttpServletRequest;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.concurrent.ForkJoinPool;
@@ -33,7 +34,6 @@ import java.util.concurrent.ForkJoinPool;
  * @author John Gasper
  * @since 5.2.9
  */
-
 @Controller
 @RequestMapping("/pushmfa")
 public class PushMfaEndpointController {
@@ -71,10 +71,11 @@ public class PushMfaEndpointController {
      * @return
      */
     @GetMapping(value = {"initiate"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<InitiatePushResponse> initiate() {
+    public ResponseEntity<InitiatePushResponse> initiate(HttpServletRequest request, RequestContext reqC) {
         InitiatePushResponse response = new InitiatePushResponse();
-
+org.apereo.cas.web.support.WebUtils.getCredential(reqC);
         //Validate user session
+
 
         String pushMfaTicketId = uniqueTicketIdGenerator.getNewTicketId(PushMfaTicket.PREFIX);
         LOGGER.debug("New Push MFA request for {} with Id: {}", "unknown", pushMfaTicketId);
@@ -98,24 +99,27 @@ public class PushMfaEndpointController {
      * @return
      */
     @PostMapping(value = {"acknowledge"}, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<AcknowledgePushResponse> acknowledge(RequestEntity<AcknowledgePushRequest> requestEntity) {
+    public ResponseEntity acknowledge(RequestEntity<AcknowledgePushRequest> requestEntity) {
 
         AcknowledgePushRequest request = requestEntity.getBody();
-        LOGGER.debug("Acknowledgement received for {} with authcode {}", request.getNonce(), request.getAuthCode());
+
+        //Validate input
+
+        LOGGER.debug("Acknowledgement received for {} with authcode {}", request.getNonce(), request.getToken());
         recordAuditEvent("user", request.getNonce(), "PUSHMFA_SHARED");
 
         PushMfaTicket ticket = ticketRegistry.getTicket(request.getNonce(), PushMfaTicket.class);
 
         if (ticket == null) {
             LOGGER.warn("Ticket ({}) not found", request.getNonce());
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return new ResponseEntity(HttpStatus.NOT_FOUND);
         }
 
-        ticket.setToken(request.getAuthCode());
+        ticket.setToken(request.getToken());
         ticketRegistry.updateTicket(ticket);
-        LOGGER.debug("Ticket ({}) updated with authcode", request.getNonce());
+        LOGGER.debug("Ticket ({}) updated with OTP", request.getNonce());
 
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity(HttpStatus.OK);
     }
 
     /**
@@ -159,11 +163,11 @@ public class PushMfaEndpointController {
                                     .body(new ErrorResponse("Item Not Found")));
 
                 } else {
-                    LOGGER.info("auth_code found for {}, returning: {}", request.getNonce(), ticket.getToken());
+                    LOGGER.info("OTP found for {}, returning: {}", request.getNonce(), ticket.getToken());
                     recordAuditEvent("user", request.getNonce(), "PUSHMFA_RETRIEVED");
 
                     final PollResponse response = new PollResponse();
-                    response.setAuthCode(ticket.getToken());
+                    response.setToken(ticket.getToken());
 
                     result.setResult(new ResponseEntity<>(response, HttpStatus.OK));
                 }

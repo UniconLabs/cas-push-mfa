@@ -1,31 +1,23 @@
 package org.apereo.cas.pushmfa;
 
 /**
+ * This is {@link ErrorResponse}.
  *
+ * @author John Gasper
+ * @since 5.2.9
  */
 public class ErrorResponse {
 
-    /**
-     *
-     */
     private String message;
 
     public ErrorResponse(final String message) {
         this.message = message;
     }
 
-    /**
-     *
-     * @return
-     */
     public String getMessage() {
         return message;
     }
 
-    /**
-     *
-     * @param message
-     */
     public void setMessage(final String message){
         this.message = message;
     }
