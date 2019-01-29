@@ -2,6 +2,7 @@ package org.apereo.cas.pushmfa.web;
 
 import org.apereo.cas.configuration.CasConfigurationProperties;
 import org.apereo.cas.pushmfa.*;
+import org.apereo.cas.pushmfa.utils.PushMfaUtils;
 import org.apereo.cas.ticket.UniqueTicketIdGenerator;
 import org.apereo.cas.ticket.registry.TicketRegistry;
 import org.apereo.cas.ticket.support.HardTimeoutExpirationPolicy;
@@ -21,7 +22,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.context.request.async.DeferredResult;
-import org.springframework.webflow.execution.RequestContext;
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.ZoneOffset;
@@ -71,19 +71,19 @@ public class PushMfaEndpointController {
      * @return
      */
     @GetMapping(value = {"initiate"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<InitiatePushResponse> initiate(HttpServletRequest request, RequestContext reqC) {
+    public ResponseEntity<InitiatePushResponse> initiate(HttpServletRequest request) {
         InitiatePushResponse response = new InitiatePushResponse();
-org.apereo.cas.web.support.WebUtils.getCredential(reqC);
-        //Validate user session
 
+        String principal = request.getSession().getAttribute(PushMfaUtils.PUSH_MFA_PRINCIPAL).toString();
 
         String pushMfaTicketId = uniqueTicketIdGenerator.getNewTicketId(PushMfaTicket.PREFIX);
-        LOGGER.debug("New Push MFA request for {} with Id: {}", "unknown", pushMfaTicketId);
+        LOGGER.debug("New Push MFA request for {} with Id: {}", principal, pushMfaTicketId);
 
         PushMfaTicket ticket = new PushMfaTicketImpl(pushMfaTicketId, new HardTimeoutExpirationPolicy(120));
+        ticket.setPrincipal(principal);
         ticketRegistry.addTicket(ticket);
 
-        recordAuditEvent("user", pushMfaTicketId, "PUSHMFA_INITIATED");
+        recordAuditEvent(principal, pushMfaTicketId, "PUSHMFA_INITIATED");
 
         //Perhaps sign the payload (JWT?)
         //Send signed payload to notification service
@@ -103,10 +103,7 @@ org.apereo.cas.web.support.WebUtils.getCredential(reqC);
 
         AcknowledgePushRequest request = requestEntity.getBody();
 
-        //Validate input
-
         LOGGER.debug("Acknowledgement received for {} with authcode {}", request.getNonce(), request.getToken());
-        recordAuditEvent("user", request.getNonce(), "PUSHMFA_SHARED");
 
         PushMfaTicket ticket = ticketRegistry.getTicket(request.getNonce(), PushMfaTicket.class);
 
@@ -114,6 +111,7 @@ org.apereo.cas.web.support.WebUtils.getCredential(reqC);
             LOGGER.warn("Ticket ({}) not found", request.getNonce());
             return new ResponseEntity(HttpStatus.NOT_FOUND);
         }
+        recordAuditEvent(ticket.getPrincipal(), request.getNonce(), "PUSHMFA_SHARED");
 
         ticket.setToken(request.getToken());
         ticketRegistry.updateTicket(ticket);
@@ -128,9 +126,9 @@ org.apereo.cas.web.support.WebUtils.getCredential(reqC);
      * @return
      */
     @PostMapping(value = {"poll"}, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public DeferredResult<ResponseEntity<PollResponse>> poll(RequestEntity<PollRequest> requestEntity) {
+    public DeferredResult<ResponseEntity<PollResponse>> poll(RequestEntity<PollRequest> requestEntity, HttpServletRequest requestBody) {
 
-        //TODO: Validate user session;
+        String principal = requestBody.getSession().getAttribute(PushMfaUtils.PUSH_MFA_PRINCIPAL).toString();
 
         PollRequest request = requestEntity.getBody();
 
@@ -156,7 +154,7 @@ org.apereo.cas.web.support.WebUtils.getCredential(reqC);
                     ticket = ticketRegistry.getTicket(request.getNonce(), PushMfaTicket.class);
                 }
 
-                if (ticket == null) {
+                if (ticket == null || !ticket.getPrincipal().equalsIgnoreCase(principal)) {
                     LOGGER.debug("Ticket not found: {}, returning 404", request.getNonce());
                     result.setErrorResult(
                             ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -164,7 +162,7 @@ org.apereo.cas.web.support.WebUtils.getCredential(reqC);
 
                 } else {
                     LOGGER.info("OTP found for {}, returning: {}", request.getNonce(), ticket.getToken());
-                    recordAuditEvent("user", request.getNonce(), "PUSHMFA_RETRIEVED");
+                    recordAuditEvent("principal", request.getNonce(), "PUSHMFA_RETRIEVED");
 
                     final PollResponse response = new PollResponse();
                     response.setToken(ticket.getToken());

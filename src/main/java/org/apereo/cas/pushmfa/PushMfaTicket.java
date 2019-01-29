@@ -33,5 +33,18 @@ public interface PushMfaTicket extends Ticket {
      */
     void setToken(String token);
 
+    /**
+     * Retrieve the principal associated with this ticket.
+     *
+     * @return the principal.
+     */
+    String getPrincipal();
+
+    /**
+     *
+     * @param principal
+     */
+    void setPrincipal(String principal);
+
 }
 

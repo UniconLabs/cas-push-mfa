@@ -43,6 +43,13 @@ public class PushMfaTicketImpl extends AbstractTicket implements PushMfaTicket {
     private String token;
 
     /**
+     * The Principal
+     */
+    @Column(name = "PRINCIPAL", nullable = false)
+    private String principal;
+
+
+    /**
      * Instantiates a new PushMfa ticket impl.
      */
     public PushMfaTicketImpl() {
@@ -88,5 +95,15 @@ public class PushMfaTicketImpl extends AbstractTicket implements PushMfaTicket {
     @Override
     public void setToken(String token) {
         this.token = token;
+    }
+
+    @Override
+    public String getPrincipal() {
+        return principal;
+    }
+
+    @Override
+    public void setPrincipal(String principal) {
+        this.principal = principal;
     }
 }

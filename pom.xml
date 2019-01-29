@@ -161,6 +161,26 @@
                     <scope>compile</scope>
                 </dependency>
                 <dependency>
+                    <groupId>org.apereo.cas</groupId>
+                    <artifactId>cas-server-support-gauth-core</artifactId>
+                    <version>${cas.version}</version>
+                    <scope>compile</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.apereo.cas</groupId>
+                    <artifactId>cas-server-core-webflow</artifactId>
+                    <version>${cas.version}</version>
+                    <scope>compile</scope>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.apereo.cas</groupId>
+                    <artifactId>cas-server-support-trusted-mfa</artifactId>
+                    <version>${cas.version}</version>
+                    <scope>compile</scope>
+                </dependency>
+
+                <dependency>
                     <groupId>javax.servlet</groupId>
                     <artifactId>javax.servlet-api</artifactId>
                     <version>3.1.0</version>
