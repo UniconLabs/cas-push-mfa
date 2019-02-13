@@ -21,7 +21,7 @@ import org.springframework.webflow.definition.registry.FlowDefinitionRegistry;
 import org.springframework.webflow.engine.builder.support.FlowBuilderServices;
 
 /**
- * This is {@link GoogleAuthenticatorConfiguration}.
+ * This is {@link GoogleAuthenticatorConfiguration}. This is an overlay/replacement class that replaces baseline functionality
  *
  * @author Misagh Moayyed
  * @since 5.0.0

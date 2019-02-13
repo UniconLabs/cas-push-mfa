@@ -1,12 +1,12 @@
-package org.apereo.cas.pushmfa;
+package org.apereo.cas.support.pushmfa.web;
 
 /**
- * This is {@link InitiatePushResponse}.
+ * This is {@link PollRequest}.
  *
  * @author John Gasper
  * @since 5.2.9
  */
-public class InitiatePushResponse {
+public class PollRequest {
 
     private String nonce;
 
@@ -17,4 +17,5 @@ public class InitiatePushResponse {
     public void setNonce(final String nonce) {
         this.nonce = nonce;
     }
+
 }

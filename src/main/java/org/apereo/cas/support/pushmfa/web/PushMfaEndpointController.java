@@ -1,8 +1,10 @@
-package org.apereo.cas.pushmfa.web;
+package org.apereo.cas.support.pushmfa.web;
 
 import org.apereo.cas.configuration.CasConfigurationProperties;
-import org.apereo.cas.pushmfa.*;
-import org.apereo.cas.pushmfa.utils.PushMfaUtils;
+import org.apereo.cas.support.pushmfa.notifications.NotificationService;
+import org.apereo.cas.support.pushmfa.ticket.PushMfaTicket;
+import org.apereo.cas.support.pushmfa.ticket.PushMfaTicketImpl;
+import org.apereo.cas.support.pushmfa.utils.PushMfaUtils;
 import org.apereo.cas.ticket.UniqueTicketIdGenerator;
 import org.apereo.cas.ticket.registry.TicketRegistry;
 import org.apereo.cas.ticket.support.HardTimeoutExpirationPolicy;
@@ -47,6 +49,8 @@ public class PushMfaEndpointController {
 
     private final AuditTrailManager auditTrailManager;
 
+    private final NotificationService notificationService;
+
     /**
      * Instantiates a new mvc endpoint.
      *
@@ -55,7 +59,8 @@ public class PushMfaEndpointController {
     public PushMfaEndpointController(final CasConfigurationProperties casProperties,
                                      final TicketRegistry ticketRegistry,
                                      final UniqueTicketIdGenerator uniqueTicketIdGenerator,
-                                     final AuditTrailManager auditTrailManager) {
+                                     final AuditTrailManager auditTrailManager,
+                                     final NotificationService notificationService) {
 
         LOGGER.info("PushMfaEndpointController initialized.");
 
@@ -63,6 +68,7 @@ public class PushMfaEndpointController {
         this.ticketRegistry = ticketRegistry;
         this.uniqueTicketIdGenerator = uniqueTicketIdGenerator;
         this.auditTrailManager = auditTrailManager;
+        this.notificationService = notificationService;
     }
 
 
@@ -87,6 +93,7 @@ public class PushMfaEndpointController {
 
         //Perhaps sign the payload (JWT?)
         //Send signed payload to notification service
+        notificationService.sendNotification("duh");
 
         LOGGER.debug("Returning Id for polling: {}", pushMfaTicketId);
         response.setNonce(pushMfaTicketId);

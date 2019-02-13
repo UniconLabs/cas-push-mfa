@@ -172,6 +172,11 @@
                     <version>${cas.version}</version>
                     <scope>compile</scope>
                 </dependency>
+                <dependency>
+                    <groupId>com.turo</groupId>
+                    <artifactId>pushy</artifactId>
+                    <version>0.13.7</version>
+                </dependency>
 
                 <dependency>
                     <groupId>org.apereo.cas</groupId>

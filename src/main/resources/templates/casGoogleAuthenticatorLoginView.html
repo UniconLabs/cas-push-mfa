@@ -35,12 +35,23 @@
         <button class="btn-submit" accesskey="p"
                 tabindex="5" id="push">PUSH</button>
         <button class="btn-submit" accesskey="c"
-                tabindex="6" id="poll_cancel">CANCEL</button>
+                tabindex="6" id="poll-cancel">CANCEL</button>
 
         <script>
             var polling;
             var nonce;
             var token;
+
+            $('#poll-cancel').on('click', function() {
+                poll_cancel();
+            });
+
+            function poll_cancel() {
+                polling = false;
+                nonce = null;
+                token = null;
+                $("#push").prop("disabled", false);
+            }
 
 
             $('#push').on('click', function() {
@@ -86,22 +97,8 @@
                             }
                             break;
                     }
-
-
                 });
             }
-
-            $('poll_cancel').on('click', function() {
-               poll_cancel();
-            });
-
-            function poll_cancel() {
-                polling = false;
-                nonce = null;
-                token = null;
-                $("#push").prop("disabled", false);
-            }
-
         </script>
 
     </div>

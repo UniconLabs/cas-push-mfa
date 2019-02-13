@@ -1,4 +1,4 @@
-package org.apereo.cas.pushmfa.utils;
+package org.apereo.cas.support.pushmfa.utils;
 
 import org.springframework.webflow.execution.RequestContext;
 

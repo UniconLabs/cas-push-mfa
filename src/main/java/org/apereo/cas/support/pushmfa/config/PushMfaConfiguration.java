@@ -1,8 +1,9 @@
-package org.apereo.cas.pushmfa.config;
+package org.apereo.cas.support.pushmfa.config;
 
 import org.apereo.cas.configuration.CasConfigurationProperties;
-import org.apereo.cas.pushmfa.web.PushMfaEndpointController;
-import org.apereo.cas.pushmfa.utils.PushMfaUtils;
+import org.apereo.cas.support.pushmfa.notifications.NotificationService;
+import org.apereo.cas.support.pushmfa.web.PushMfaEndpointController;
+import org.apereo.cas.support.pushmfa.utils.PushMfaUtils;
 import org.apereo.cas.ticket.registry.TicketRegistry;
 import org.apereo.cas.util.DefaultUniqueTicketIdGenerator;
 import org.apereo.inspektr.audit.AuditTrailManager;
@@ -22,7 +23,7 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration("pushMfaConfiguration")
 @EnableConfigurationProperties(CasConfigurationProperties.class)
-public class PushMfaConfiguration {
+public class PushMfaConfiguration  {
 
     @Autowired
     private CasConfigurationProperties casProperties;
@@ -43,6 +44,9 @@ public class PushMfaConfiguration {
     @RefreshScope
     @Bean
     public PushMfaEndpointController pushMfaEndpointController() {
-        return new PushMfaEndpointController(casProperties, ticketRegistry.getIfAvailable(), new DefaultUniqueTicketIdGenerator(10, "test"), auditTrailManager.getIfAvailable());
+        return new PushMfaEndpointController(casProperties, ticketRegistry.getIfAvailable(),
+                new DefaultUniqueTicketIdGenerator(10, "test"),
+                auditTrailManager.getIfAvailable(),
+                new NotificationService(casProperties.getAuthn().getMfa().getPush()));
     }
 }

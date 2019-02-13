@@ -1,4 +1,4 @@
-package org.apereo.cas.pushmfa;
+package org.apereo.cas.support.pushmfa.ticket;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.apereo.cas.ticket.Ticket;

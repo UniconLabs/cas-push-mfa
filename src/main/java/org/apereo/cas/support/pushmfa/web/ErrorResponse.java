@@ -1,4 +1,4 @@
-package org.apereo.cas.pushmfa;
+package org.apereo.cas.support.pushmfa.web;
 
 /**
  * This is {@link ErrorResponse}.
