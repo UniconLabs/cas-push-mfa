@@ -84,10 +84,9 @@ public class NotificationService {
 
         LOGGER.debug("Creating notification for {} with {} and {}", deviceToken, pushMfaProperties.getBundleId().trim(), payload);
         pushNotification = new SimpleApnsPushNotification(deviceToken, pushMfaProperties.getBundleId().trim(), payload);
-        apnsClient.sendNotification(pushNotification);
 
         final PushNotificationFuture<SimpleApnsPushNotification, PushNotificationResponse<SimpleApnsPushNotification>>
-        sendNotificationFuture = apnsClient.sendNotification(pushNotification);
+                sendNotificationFuture = apnsClient.sendNotification(pushNotification);
 
         sendNotificationFuture.addListener(new PushNotificationResponseListener<SimpleApnsPushNotification>() {
 
